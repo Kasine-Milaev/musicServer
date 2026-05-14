@@ -1,0 +1,53 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - backend
+
+  postgresql:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: person
+      POSTGRES_PASSWORD: werr1234
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      
+  backend:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: backend
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgresql
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+volumes:
+  pgdata:
+  static_volume:
+  media_volume:
+  pgadmin_data:

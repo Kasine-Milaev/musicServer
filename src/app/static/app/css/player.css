@@ -1,0 +1,116 @@
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    font-family: sans-serif;
+}
+
+.player-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 360px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.cover {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #f0f0f0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.cover i {
+    font-size: 64px;
+    color: #aaa;
+}
+
+.song-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #111;
+    margin-bottom: 4px;
+}
+
+.song-artist {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+input[type=range] {
+    width: 100%;
+    accent-color: #111;
+    cursor: pointer;
+}
+
+.time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+    margin: 6px 0 1.5rem;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-ctrl {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    display: flex;
+    align-items: center;
+}
+
+.btn-ctrl:hover {
+    color: #111;
+}
+
+.btn-ctrl i {
+    font-size: 22px;
+}
+
+.btn-play {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #111;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.btn-play:hover {
+    opacity: 0.85;
+}
+
+.btn-play i {
+    font-size: 22px;
+}
+
+.volume-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.volume-row i {
+    font-size: 16px;
+    color: #888;
+}

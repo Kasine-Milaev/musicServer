@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное | Yang</title>
+    <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>   
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/tracks/">Треки</a>
+            <a href="/favorites/" class="active">Избранное</a>
+        </nav>
+        <div class="search-bar">
+            <span></span>
+            <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
+        </div>
+    </header>
+</body>
+</html>
