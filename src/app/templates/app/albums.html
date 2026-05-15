@@ -1,12 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Альбомы | Yang</title>
     <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
+
 <body>
     <header>
         <div class="logo">
@@ -24,5 +27,20 @@
             <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
         </div>
     </header>
+    <main class="albums-page">
+    <h1>Альбомы</h1>
+    <div class="albums-grid">
+        {% for album in albums %}
+        <a href="/albums/{{ album.slug }}/" class="media-card" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
+            {% if not album.cover %}
+            <i class="ti ti-disc artist-placeholder"></i>
+            {% endif %}
+            <span class="card-name">{{ album.name }}</span>
+            {% if album.year %}<span class="card-year">{{ album.year }}</span>{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+</main>
 </body>
+
 </html>

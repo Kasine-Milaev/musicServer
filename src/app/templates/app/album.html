@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Альбом | Yang</title>
+    <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'app/css/player.css'%}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/tracks/">Треки</a>
+            <a href="/favorites/">Избранное</a>
+        </nav>
+        <div class="search-bar">   
+            <span></span>
+            <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
+        </div>
+    </header>
+    <main class="album-detail-page">
+    <section class="album-header">
+        <div class="album-cover-large" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
+            {% if not album.cover %}
+            <i class="ti ti-disc album-placeholder"></i>
+            {% endif %}
+        </div>
+        <div class="album-meta">
+            <h1>{{ album.name }}</h1>
+            {%for albumAuthor in albumAuthors%}
+                <a href="/artists/{{ albumAuthor.slug }}/" class="album-artist">{{ albumAuthor.name }}</a>
+            {%endfor%}
+            {% if album.year %}
+            <span class="album-year">{{ album.year }}</span>
+            {% endif %}
+            {% if album.description %}
+            <p class="album-description">{{ album.description }}</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="tracks-section">
+    <div class="track-list">
+        {% for track in tracks %}
+        <div class="track-item" 
+            data-track-id="{{ track.id }}"
+            data-track-url="{{ track.audio.url }}"
+            data-track-cover="{% if album.cover %}{{ album.cover.url }}{% endif %}">
+            
+            <div class="track-number">
+                {{ forloop.counter }}
+            </div>
+            
+            <div class="track-info">
+                <div class="track-title">{{ track.name }}</div>
+                {%for artist in track.trackauthor_set.all%}
+                <div class="track-artist">ft. {{ artist.artist.name }}</div>
+                {%endfor%}
+            </div>
+            
+            <div class="track-duration">{{ track.duration|default:"3:45" }}</div>
+            
+            <button class="track-play-btn" aria-label="Воспроизвести">
+                <i class="ti ti-player-play"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+</main>
+<div id="popup-player" class="popup-player hidden">
+    <div class="player-card">
+        <div class="cover" id="player-cover">
+            <i class="ti ti-music"></i>
+        </div>
+        <p class="song-title" id="player-title">Название трека</p>
+        <p class="song-artist" id="player-artist">Исполнитель</p>
+        <audio id="audio" preload="metadata"></audio>
+        <input type="range" id="progress" min="0" max="100" value="0">
+        <div class="time-row">
+            <span id="cur">0:00</span>
+            <span id="dur">0:00</span>
+        </div>
+        <div class="controls">
+            <button class="btn-ctrl" id="prevBtn"><i class="ti ti-player-skip-back"></i></button>
+            <button class="btn-play" id="playBtn">
+                <i class="ti ti-player-play" id="playIcon"></i>
+            </button>
+            <button class="btn-ctrl" id="nextBtn"><i class="ti ti-player-skip-forward"></i></button>
+        </div>
+        <div class="volume-row">
+            <i class="ti ti-volume-2"></i>
+            <input type="range" id="volume" min="0" max="100" value="70">
+            <i class="ti ti-volume"></i>
+        </div>
+        <button class="player-close" id="playerClose"><i class="ti ti-x"></i></button>
+    </div>
+</div>
+<script src="{% static 'app/js/player.js'%}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const audio = document.getElementById('audio');
+        const playIcon = document.getElementById('playIcon');
+        const playerCover = document.getElementById('player-cover');
+        const playerTitle = document.getElementById('player-title');
+        const playerArtist = document.getElementById('player-artist');
+        const popup = document.getElementById('popup-player');
+
+        if (audio) {
+            document.querySelectorAll('.track-play-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.preventDefault();
+                    const item = e.target.closest('.track-item');
+                    
+                    if (popup) popup.classList.remove('hidden');
+                    const url = item.dataset.trackUrl;
+                    const cover = item.dataset.trackCover;
+                    const title = item.querySelector('.track-title').textContent;
+                    const artist = item.querySelector('.track-artist')?.textContent;
+                    
+                    if (audio.src !== url) {
+                        audio.src = url;
+                        if (playerTitle) playerTitle.textContent = title;
+                        if (playerArtist) playerArtist.textContent = artist || '';
+                        
+                        if (cover && playerCover) {
+                            playerCover.innerHTML = `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;">`;
+                        }
+                        audio.play().then(() => {
+                            if (playIcon) playIcon.className = 'ti ti-player-pause';
+                        }).catch(() => {});
+                    }
+                });
+            });
+            const closeBtn = document.getElementById('playerClose');
+            if (closeBtn && popup) {
+                closeBtn.onclick = () => {
+                    audio.pause();
+                    popup.classList.add('hidden');
+                };
+            }
+        }
+    }, 100);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Артист | Yang</title>
+    <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/tracks/">Треки</a>
+            <a href="/favorites/">Избранное</a>
+        </nav>
+        <div class="search-bar">
+            <span></span>
+            <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
+        </div>
+    </header>
+    <main>
+    <h1>{{ artist.name }}</h1>
+
+    <section class="media-section">
+        <h2 class="section-title">Альбомы</h2>
+        <div class="scroll-wrapper">
+            <button class="scroll-btn prev-btn" aria-label="Назад"><i class="ti ti-chevron-left"></i></button>
+            <ul class="scroll-list">
+                {% for album in albums %}
+                <a href="/albums/{{ album.slug }}/" class="media-card" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
+                {% if not album.cover %}
+                <i class="ti ti-disc artist-placeholder"></i>
+                {% endif %}
+                <span class="card-name">{{ album.name }}</span>
+                {% if album.year %}<span class="card-year">{{ album.year }}</span>{% endif %}
+                </a>
+                {% endfor %}
+            </ul>
+            <button class="scroll-btn next-btn" aria-label="Вперёд"><i class="ti ti-chevron-right"></i></button>
+        </div>
+    </section>
+
+    <section class="media-section">
+        <h2 class="section-title">Синглы</h2>
+        <div class="scroll-wrapper">
+            <button class="scroll-btn prev-btn" aria-label="Назад"><i class="ti ti-chevron-left"></i></button>
+            <ul class="scroll-list">
+                {% for single in singles %}
+                    <a href="/singles/{{ single.slug }}/" class="media-card" {% if single.cover %}style="--cover: url('{{ single.cover.url }}')"{% endif %}>
+                    {% if not single.cover %}
+                    <i class="ti ti-music artist-placeholder"></i>
+                    {% endif %}
+                    <span class="card-name">{{ single.name }}</span>
+                {% if single.year %}<span class="card-year">{{ single.year }}</span>{% endif %}
+                    </a>
+                {% endfor %}
+                </ul>
+            <button class="scroll-btn next-btn" aria-label="Вперёд"><i class="ti ti-chevron-right"></i></button>
+        </div>
+    </section>
+</main>
+<script>
+    document.querySelectorAll('.scroll-list').forEach(list => {
+        const wrapper = list.closest('.scroll-wrapper');
+        const prev = wrapper.querySelector('.prev-btn');
+        const next = wrapper.querySelector('.next-btn');
+        const step = 200;
+
+        prev.addEventListener('click', () => list.scrollBy({ left: -step, behavior: 'smooth' }));
+        next.addEventListener('click', () => list.scrollBy({ left: step, behavior: 'smooth' }));
+    });
+</script>
+</body>
+</html>

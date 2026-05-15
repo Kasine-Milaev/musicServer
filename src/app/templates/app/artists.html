@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Жанры | Yang</title>
     <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
 <body>
     <header>
@@ -24,5 +25,18 @@
             <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
         </div>
     </header>
+    <main class="artists-page">
+    <h1>Артисты</h1>
+    <div class="artists-grid">
+        {% for artist in artists %}
+        <a href="/artists/{{artist.slug}}" class="artist-card" {% if artist.photo %}style="--avatar: url('{{ artist.photo.url }}')"{% endif %}>
+            {% if not artist.photo %}
+            <i class="ti ti-user artist-placeholder"></i>
+            {% endif %}
+            <span class="artist-name">{{ artist.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</main>
 </body>
 </html>
