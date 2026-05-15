@@ -14,13 +14,19 @@ services:
     image: postgres:16-alpine
     container_name: postgres
     environment:
-      POSTGRES_USER: person
-      POSTGRES_PASSWORD: werr1234
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 2s
       
   backend:
     build:
@@ -32,6 +38,9 @@ services:
     volumes:
       - ./src:/app
       - static_volume:/app/staticfiles
+    depends_on:
+      postgresql:
+        condition: service_healthy
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
