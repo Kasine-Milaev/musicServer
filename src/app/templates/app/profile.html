@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль | {{ user.username }} | Yang</title>
+    <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body class="profile-page">
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/favorites/">Избранное</a>
+        </nav>
+        <div class="search-bar">   
+            <span></span>
+            <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <section class="profile-header">
+            <div class="profile-avatar">
+                {% if user.email %}
+                    <img src="https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=e94560&color=fff" alt="{{ user.username }}">
+                {% else %}
+                    <i class="ti ti-user"></i>
+                {% endif %}
+            </div>
+            
+            <div class="profile-info">
+                <h1>{{ user.username }}</h1>
+                {% if user.first_name %}
+                <p class="profile-realname">{{ user.first_name }} {{ user.last_name }}</p>
+                {% endif %}
+                {% if user.email %}
+                <p class="profile-email"><i class="ti ti-mail"></i> {{ user.email }}</p>
+                {% endif %}
+                {% if user.date_joined %}
+                <p class="profile-joined">С нами с {{ user.date_joined|date:"d F Y" }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="profile-actions">
+                <a href="{% url 'edit_profile' %}" class="btn-outline">
+                    <i class="ti ti-edit"></i> Редактировать
+                </a>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-danger">
+                        <i class="ti ti-logout"></i> Выйти
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="profile-stats">
+            <div class="stat-card">
+                <i class="ti ti-heart"></i>
+                <span class="stat-value">{{ favorites_count|default:0 }}</span>
+                <span class="stat-label">Избранное</span>
+            </div>
+            <div class="stat-card">
+                <i class="ti ti-playlist"></i>
+                <span class="stat-value">{{ playlists_count|default:0 }}</span>
+                <span class="stat-label">Плейлисты</span>
+            </div>
+            <div class="stat-card">
+                <i class="ti ti-headphones"></i>
+                <span class="stat-value">{{ listens_count|default:0 }}</span>
+                <span class="stat-label">Прослушиваний</span>
+            </div>
+            <div class="stat-card">
+                <i class="ti ti-clock"></i>
+                <span class="stat-value">{{ listening_time|default:"0ч" }}</span>
+                <span class="stat-label">Время в приложении</span>
+            </div>
+        </section>
+
+        <section class="profile-tabs">
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="favorites">Избранное</button>
+                <button class="tab-btn" data-tab="history">История</button>
+                <button class="tab-btn" data-tab="playlists">Плейлисты</button>
+                <button class="tab-btn" data-tab="settings">Настройки</button>
+            </div>
+            
+            <div class="tab-content">
+                <div id="favorites" class="tab-pane active">
+                    {% if favorites %}
+                    <div class="track-list">
+                        {% for item in favorites %}
+                        <div class="track-item">
+                            <div class="track-number">{{ forloop.counter }}</div>
+                            <div class="track-info">
+                                <div class="track-title">{{ item.track.name }}</div>
+                                <div class="track-artist">{{ item.track.artist_name }}</div>
+                            </div>
+                            <div class="track-duration">{{ item.track.duration|default:"3:45" }}</div>
+                            <button class="track-play-btn" aria-label="Воспроизвести">
+                                <i class="ti ti-player-play"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="ti ti-heart-broken"></i>
+                        <p>Пока нет избранных треков</p>
+                        <a href="/albums/" class="btn-outline">Найти музыку</a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div id="history" class="tab-pane">
+                    {% if history %}
+                    <div class="track-list">
+                        {% for item in history %}
+                        <div class="track-item">
+                            <div class="track-number">{{ forloop.counter }}</div>
+                            <div class="track-info">
+                                <div class="track-title">{{ item.track.name }}</div>
+                                <div class="track-artist">{{ item.track.artist_name }}</div>
+                            </div>
+                            <div class="track-time">{{ item.listened_at|date:"d.m.Y H:i" }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="ti ti-clock-cancel"></i>
+                        <p>История прослушиваний пуста</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div id="playlists" class="tab-pane">
+                    {% if playlists %}
+                    <div class="playlists-grid">
+                        {% for playlist in playlists %}
+                        <div class="playlist-card">
+                            <div class="playlist-cover">
+                                {% if playlist.cover %}
+                                <img src="{{ playlist.cover.url }}" alt="{{ playlist.name }}">
+                                {% else %}
+                                <i class="ti ti-playlist"></i>
+                                {% endif %}
+                            </div>
+                            <div class="playlist-info">
+                                <h3>{{ playlist.name }}</h3>
+                                <p>{{ playlist.tracks_count }} треков</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="ti ti-playlist-off"></i>
+                        <p>Пока нет созданных плейлистов</p>
+                        <button class="btn-outline">Создать первый</button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div id="settings" class="tab-pane">
+                    <div class="settings-group">
+                        <h3>Учётная запись</h3>
+                        <div class="setting-item">
+                            <span>Изменить пароль</span>
+                            <a href="{% url 'password_change' %}" class="btn-link">Изменить</a>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h3>Приложение</h3>
+                        <div class="setting-item">
+                            <span>Тёмная тема</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="themeToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Автозапуск треков</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="autoPlayToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group danger">
+                        <h3>Опасная зона</h3>
+                        <button class="btn-danger" onclick="confirmDelete()">
+                            <i class="ti ti-trash"></i> Удалить аккаунт
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+    
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        const saved = localStorage.getItem('yang-theme');
+        if (saved) themeToggle.checked = saved === 'dark';
+        themeToggle.addEventListener('change', () => {
+            localStorage.setItem('yang-theme', themeToggle.checked ? 'dark' : 'light');
+            document.body.classList.toggle('light-mode', !themeToggle.checked);
+        });
+    }
+    
+    function confirmDelete() {
+        if (confirm('Вы уверены? Все данные будут удалены безвозвратно.')) {
+            window.location.href = '{% url "delete_account" %}';
+        }
+    }
+    </script>
+</body>
+</html>

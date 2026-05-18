@@ -20,7 +20,7 @@ class Album(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
     cover = models.ImageField(upload_to='albums/',null=True,blank=True)
-
+    tracksCount = models.PositiveSmallIntegerField(default=0)
     def __str__(self):
         return self.name
 
@@ -37,7 +37,7 @@ class Track(models.Model):
         on_delete=models.CASCADE
     )
     path = models.FileField(upload_to='tracks/')
-
+    order = models.PositiveSmallIntegerField(default=0)
     def __str__(self):
         return self.name
 
@@ -49,7 +49,6 @@ class Track(models.Model):
 class TrackAuthor(models.Model):
     track = models.ForeignKey(Track, on_delete=models.CASCADE)
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
-    
     class Meta:
         unique_together = ('track','artist')
 

@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | Yang</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css'%}">
+</head>
+<body class="auth-page">
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/favorites/">Избранное</a>
+        </nav>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Вход в аккаунт</h2>
+            
+            {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                <p class="message {{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Имя пользователя или Email</label>
+                    <input type="text" id="username" name="username" required placeholder="Введите логин" autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required placeholder="Введите пароль" autocomplete="current-password">
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" name="remember"> Запомнить меня
+                    </label>
+                    {% comment %} <a href="{% url 'password_reset' %}" class="forgot-link">Забыли пароль?</a> {% endcomment %}
+                </div>
+                
+                <button type="submit" class="btn-primary">Войти</button>
+            </form>
+            
+            <p class="auth-switch">
+                Нет аккаунта? <a href="{% url 'registration' %}">Зарегистрироваться</a>
+            </p>
+        </div>
+    </main>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messages = document.querySelectorAll('.message');
+
+    messages.forEach(function(message) {
+        let autoClose = setTimeout(function() {
+            closeMessage(message);
+        }, 5000);
+
+        message.addEventListener('click', function() {
+            clearTimeout(autoClose);
+            closeMessage(message);
+        });
+    });
+
+    function closeMessage(element) {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(-20px)';
+        element.style.transition = 'opacity 0.3s, transform 0.3s';
+        
+        setTimeout(function() {
+            element.remove();
+            const container = document.querySelector('.auth-messages');
+            if (container && container.children.length === 0) {
+                container.style.display = 'none';
+            }
+        }, 300);
+    }
+});
+</script>
+</body>
+</html>

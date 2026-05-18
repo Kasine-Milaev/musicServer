@@ -12,15 +12,15 @@ function fmt(s) {
     return m + ':' + (sec < 10 ? '0' : '') + sec;
 }
 
-playBtn.addEventListener('click', () => {
-    if (audio.paused) {
-        audio.play();
-        playIcon.className = 'ti ti-player-pause';
-    } else {
-        audio.pause();
-        playIcon.className = 'ti ti-player-play';
-    }
-});
+// playBtn.addEventListener('click', () => {
+//     if (audio.paused) {
+//         audio.play();
+//         playIcon.className = 'ti ti-player-pause';
+//     } else {
+//         audio.pause();
+//         playIcon.className = 'ti ti-player-play';
+//     }
+// });
 
 audio.addEventListener('timeupdate', () => {
     const pct = (audio.currentTime / audio.duration) * 100;

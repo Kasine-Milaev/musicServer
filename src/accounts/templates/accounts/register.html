@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация | Yang</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css'%}">
+</head>
+<body class="auth-page">
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/favorites/">Избранное</a>
+        </nav>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Создать аккаунт</h2>
+            
+            {% if form.errors %}
+            {% for error_type, error_list in form.errors.items %}
+                <div class="auth-messages">
+                    {% for error in error_list %}
+                        <script>
+                            console.log('{{error}}');
+                        </script>
+                        <p class="message {{ error_type  }}">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {%endfor%}
+            {% endif %}
+            
+            <form method="post" action="{% url 'registration' %}" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" required placeholder="Придумайте логин" minlength="3" maxlength="150" autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="example@yang.com" autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password1">Пароль</label>
+                    <input type="password" id="password1" name="password1" required placeholder="Минимум 8 символов" minlength="8" autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password2">Подтвердите пароль</label>
+                    <input type="password" id="password2" name="password2" required placeholder="Повторите пароль" autocomplete="new-password">
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" name="agree" required> Я согласен с <a href="#">условиями использования</a>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-primary">Зарегистрироваться</button>
+            </form>
+            
+            <p class="auth-switch">
+                Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+            </p>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.message');
+
+            messages.forEach(function(message) {
+                let autoClose = setTimeout(function() {
+                closeMessage(message);
+            }, 5000);
+
+            message.addEventListener('click', function(e) {
+            if (e.target.closest('.message::after') || e.target === this) {
+                clearTimeout(autoClose);
+                closeMessage(message);
+            }
+        });
+    });
+
+    function closeMessage(element) {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(-20px)';
+        element.style.transition = 'opacity 0.3s, transform 0.3s';
+        
+        setTimeout(function() {
+            element.remove();
+            const container = document.querySelector('.auth-messages');
+            if (container && container.children.length === 0) {
+                container.style.display = 'none';
+            }
+        }, 300);
+    }
+});
+</script>
+</body>
+</html>

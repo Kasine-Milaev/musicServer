@@ -6,6 +6,7 @@ services:
       - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./src/media:/app/media
       - static_volume:/app/staticfiles
     depends_on:
       - backend

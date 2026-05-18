@@ -18,7 +18,6 @@
             <a href="/">Главная</a>
             <a href="/artists/">Артисты</a>
             <a href="/albums/">Альбомы</a>
-            <a href="/tracks/">Треки</a>
             <a href="/favorites/">Избранное</a>
         </nav>
         <div class="search-bar">   
@@ -49,31 +48,41 @@
 
     <section class="tracks-section">
     <div class="track-list">
-        {% for track in tracks %}
-        <div class="track-item" 
-            data-track-id="{{ track.id }}"
-            data-track-url="{{ track.audio.url }}"
-            data-track-cover="{% if album.cover %}{{ album.cover.url }}{% endif %}">
-            
-            <div class="track-number">
-                {{ forloop.counter }}
-            </div>
-            
-            <div class="track-info">
-                <div class="track-title">{{ track.name }}</div>
-                {%for artist in track.trackauthor_set.all%}
-                <div class="track-artist">ft. {{ artist.artist.name }}</div>
-                {%endfor%}
-            </div>
-            
-            <div class="track-duration">{{ track.duration|default:"3:45" }}</div>
-            
-            <button class="track-play-btn" aria-label="Воспроизвести">
-                <i class="ti ti-player-play"></i>
-            </button>
+    {% for track in tracks %}
+    {% if track %}
+    <div class="track-item" 
+        data-track-id="{{ track.id }}"
+        data-track-url="{{ track.path.url }}"
+        data-track-cover="{% if album.cover %}{{ album.cover.url }}{% endif %}">
+        
+        <div class="track-number">{{ forloop.counter }}</div>
+        
+        <div class="track-info">
+            <div class="track-title">{{ track.name }}</div>
+            {%for artist in track.trackauthor_set.all%}
+            <div class="track-artist">ft. {{ artist.artist.name }}</div>
+            {%endfor%}
         </div>
-        {% endfor %}
+        
+        <div class="track-duration">{{ track.duration|default:"3:45" }}</div>
+        
+        <button class="track-play-btn" aria-label="Воспроизвести">
+            <i class="ti ti-player-play"></i>
+        </button>
     </div>
+    {%else%}
+    <div class="track-item skeleton">
+        <div class="track-number">{{ forloop.counter|add:tracks.count }}</div>
+        <div class="track-info">
+            <div class="track-title"></div>
+            <div class="track-artist"></div>
+        </div>
+        <div class="track-duration"></div>
+        <button class="track-play-btn"></button>
+    </div>
+    {%endif%}
+    {% endfor %}
+</div>
 </section>
 </main>
 <div id="popup-player" class="popup-player hidden">
@@ -83,7 +92,7 @@
         </div>
         <p class="song-title" id="player-title">Название трека</p>
         <p class="song-artist" id="player-artist">Исполнитель</p>
-        <audio id="audio" preload="metadata"></audio>
+        <audio id="audio" preload="metadata" type="audio/m4a"></audio>
         <input type="range" id="progress" min="0" max="100" value="0">
         <div class="time-row">
             <span id="cur">0:00</span>
@@ -107,49 +116,98 @@
 <script src="{% static 'app/js/player.js'%}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        const audio = document.getElementById('audio');
-        const playIcon = document.getElementById('playIcon');
-        const playerCover = document.getElementById('player-cover');
-        const playerTitle = document.getElementById('player-title');
-        const playerArtist = document.getElementById('player-artist');
-        const popup = document.getElementById('popup-player');
+    const audio = document.getElementById('audio');
+    const playIcon = document.getElementById('playIcon');
+    const playerCover = document.getElementById('player-cover');
+    const playerTitle = document.getElementById('player-title');
+    const playerArtist = document.getElementById('player-artist');
+    const popup = document.getElementById('popup-player');
+    const progressEl = document.getElementById('progress');
+    const curEl = document.getElementById('cur');
+    const durEl = document.getElementById('dur');
+    const playBtn = document.getElementById('playBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const closeBtn = document.getElementById('playerClose');
+    const volumeEl = document.getElementById('volume');
+    const albumAuthors = document.getElementsByClassName('album-artist');
+    if (!audio) return;
 
-        if (audio) {
-            document.querySelectorAll('.track-play-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.preventDefault();
-                    const item = e.target.closest('.track-item');
-                    
-                    if (popup) popup.classList.remove('hidden');
-                    const url = item.dataset.trackUrl;
-                    const cover = item.dataset.trackCover;
-                    const title = item.querySelector('.track-title').textContent;
-                    const artist = item.querySelector('.track-artist')?.textContent;
-                    
-                    if (audio.src !== url) {
-                        audio.src = url;
-                        if (playerTitle) playerTitle.textContent = title;
-                        if (playerArtist) playerArtist.textContent = artist || '';
-                        
-                        if (cover && playerCover) {
-                            playerCover.innerHTML = `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;">`;
-                        }
-                        audio.play().then(() => {
-                            if (playIcon) playIcon.className = 'ti ti-player-pause';
-                        }).catch(() => {});
-                    }
-                });
-            });
-            const closeBtn = document.getElementById('playerClose');
-            if (closeBtn && popup) {
-                closeBtn.onclick = () => {
-                    audio.pause();
-                    popup.classList.add('hidden');
-                };
-            }
+    function formatTime(sec) {
+        if (!sec || isNaN(sec)) return "0:00";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function updateIcon() {
+        if (playIcon) playIcon.className = audio.paused ? 'ti ti-player-play' : 'ti ti-player-pause';
+    }
+
+    function loadTrack(item) {
+        if (!item) return;
+        const url = item.dataset.trackUrl;
+        const cover = item.dataset.trackCover;
+        const title = item.querySelector('.track-title')?.textContent.trim();
+        const artist = item.querySelector('.track-artist')?.textContent.trim();
+
+        if (!url) return;
+        if (popup) popup.classList.remove('hidden');
+
+        if (audio.src !== url) {
+            audio.src = url;
+            audio.currentTime = 0;
+            if (playerTitle) playerTitle.textContent = title || 'Без названия';
+                if (albumAuthors){
+                    playerArtist.textContent = ''
+                    const authorsText = Array.from(albumAuthors).map(el => el.textContent).join(', ');
+                    playerArtist.textContent +=authorsText;
+                }
+            if (artist) playerArtist.textContent += ' ' + artist || '';
+            if (cover && playerCover) playerCover.innerHTML = `<img src="${cover}" style="width:100%;height:100%;object-fit:cover; border-radius: 8px;">`;
         }
-    }, 100);
+        audio.play().catch(e => console.log(e));
+    }
+
+    document.querySelectorAll('.track-play-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const item = btn.closest('.track-item');
+            if (item) loadTrack(item);
+        });
+    });
+
+    if (playBtn) playBtn.addEventListener('click', () => audio.paused ? audio.play() : audio.pause());
+    
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+        const active = document.querySelector('.track-item[data-track-url="' + audio.src + '"]');
+        if (active?.previousElementSibling) loadTrack(active.previousElementSibling);
+    });
+
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+        const active = document.querySelector('.track-item[data-track-url="' + audio.src + '"]');
+        if (active?.nextElementSibling) loadTrack(active.nextElementSibling);
+    });
+
+    if (closeBtn && popup) closeBtn.onclick = () => { audio.pause(); popup.classList.add('hidden'); updateIcon(); };
+
+    audio.addEventListener('play', updateIcon);
+    audio.addEventListener('pause', updateIcon);
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+            if (progressEl) progressEl.value = (audio.currentTime / audio.duration) * 100;
+            if (curEl) curEl.textContent = formatTime(audio.currentTime);
+        }
+    });
+    audio.addEventListener('loadedmetadata', () => { if (durEl) durEl.textContent = formatTime(audio.duration); });
+    audio.addEventListener('ended', () => { if (nextBtn) nextBtn.click(); });
+
+    if (progressEl) progressEl.addEventListener('input', (e) => { if (audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration; });
+    if (volumeEl) {
+        audio.volume = volumeEl.value / 100;
+        volumeEl.addEventListener('input', (e) => audio.volume = e.target.value / 100);
+    }
 });
 </script>
 </body>
