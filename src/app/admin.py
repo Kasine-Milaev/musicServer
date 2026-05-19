@@ -10,11 +10,16 @@ class AlbumAuthorInline(admin.TabularInline):
     model = AlbumAuthor
     extra = 0
 
+class AlbumTracks(admin.TabularInline):
+    model = Track
+    extra = 0 
+    ordering = ['order']
+
 class TrackAdmin(admin.ModelAdmin):
     inlines = [TrackAuthorInline]
 
 class AlbumAdmin(admin.ModelAdmin):
-    inlines = [AlbumAuthorInline]
+    inlines = [AlbumAuthorInline,AlbumTracks]
 
 admin.site.register(Album,AlbumAdmin)
 admin.site.register(Artist)

@@ -25,15 +25,10 @@
         <div class="auth-card">
             <h2>Создать аккаунт</h2>
             
-            {% if form.errors %}
-            {% for error_type, error_list in form.errors.items %}
+            {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
                 <div class="auth-messages">
-                    {% for error in error_list %}
-                        <script>
-                            console.log('{{error}}');
-                        </script>
-                        <p class="message {{ error_type  }}">{{ error }}</p>
-                    {% endfor %}
+                    <p class="message {{ error_type  }}">{{ error }}</p>
                 </div>
             {%endfor%}
             {% endif %}
@@ -43,24 +38,38 @@
                 
                 <div class="form-group">
                     <label for="username">Имя пользователя</label>
-                    <input type="text" id="username" name="username" required placeholder="Придумайте логин" minlength="3" maxlength="150" autocomplete="username">
+                    <input value="{{form.username.value|default:'' }}" type="text" id="username" name="username" required placeholder="Придумайте логин" minlength="3" maxlength="150" autocomplete="username">
                 </div>
-                
+                {%if form.username.errors%}
+                    <p class="">{{ form.username.errors.0 }}</p>
+                {%endif%}
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required placeholder="example@yang.com" autocomplete="email">
+                    <input value="{{form.email.value|default:'' }}" type="email" id="email" name="email" required placeholder="example@yang.com" autocomplete="email">
                 </div>
-                
+                {%if form.email.errors%}
+                    <p class="">{{ form.email.errors.0 }}</p>
+                {%endif%}
                 <div class="form-group">
                     <label for="password1">Пароль</label>
                     <input type="password" id="password1" name="password1" required placeholder="Минимум 8 символов" minlength="8" autocomplete="new-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                        <i class="ti ti-eye"></i>
+                    </button>
                 </div>
-                
+                {%if form.password1.errors%}
+                    <p class="password1">{{ form.password1.errors.0 }}</p>
+                {%endif%}
                 <div class="form-group">
                     <label for="password2">Подтвердите пароль</label>
                     <input type="password" id="password2" name="password2" required placeholder="Повторите пароль" autocomplete="new-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                        <i class="ti ti-eye"></i>
+                    </button>
                 </div>
-                
+                {%if form.password2.errors%}
+                    <p class="password2">{{ form.password2.errors.0 }}</p>
+                {%endif%}
                 <div class="form-options">
                     <label class="checkbox">
                         <input type="checkbox" name="agree" required> Я согласен с <a href="#">условиями использования</a>
@@ -92,6 +101,21 @@
         });
     });
 
+    function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+    
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('ti-eye');
+                icon.classList.add('ti-eye-off');
+        }   else {
+                input.type = 'password';
+                icon.classList.remove('ti-eye-off');
+                icon.classList.add('ti-eye');
+    }
+}
+
     function closeMessage(element) {
         element.style.opacity = '0';
         element.style.transform = 'translateY(-20px)';
@@ -105,6 +129,7 @@
             }
         }, 300);
     }
+    
 });
 </script>
 </body>

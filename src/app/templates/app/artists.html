@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Жанры | Yang</title>
+    <title>Артисты | Yang</title>
     <link rel="stylesheet" href="{% static 'app/css/style.css'%}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
@@ -23,19 +23,41 @@
             <span></span>
             <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
         </div>
+        
+        {% if not user.is_authenticated %}
+        <div class="auth-buttons">
+            <a href="{% url 'login' %}" class="btn-login">Войти</a>
+            <a href="{% url 'registration' %}" class="btn-register">Регистрация</a>
+        </div>
+        {% else %}
+        <div class="user-profile">
+            <a href="{% url 'profile' %}" class="user-link">
+                <div class="user-avatar">
+                    {% if user.cover %}<img src="{{ user.cover.url }}" alt="{{ user.username }}">{% else %}<i class="ti ti-user"></i>{% endif %}
+                </div>
+                <span class="user-name">{{ user.username }}</span>
+                <i class="ti ti-chevron-down user-arrow"></i>
+            </a>
+        </div>
+        {% endif %}
     </header>
-    <main class="artists-page">
-    <h1>Артисты</h1>
-    <div class="artists-grid">
-        {% for artist in artists %}
-        <a href="/artists/{{artist.slug}}" class="artist-card" {% if artist.photo %}style="--avatar: url('{{ artist.photo.url }}')"{% endif %}>
-            {% if not artist.photo %}
-            <i class="ti ti-user artist-placeholder"></i>
-            {% endif %}
-            <span class="artist-name">{{ artist.name }}</span>
-        </a>
-        {% endfor %}
+
+    {% if messages %}
+    <div class="auth-messages centered">
+        {% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}
     </div>
-</main>
+    {% endif %}
+
+    <main class="artists-page">
+        <h1>Артисты</h1>
+        <div class="artists-grid">
+            {% for artist in artists %}
+            <a href="/artists/{{artist.slug}}" class="artist-card" {% if artist.photo %}style="--avatar: url('{{ artist.photo.url }}')"{% endif %}>
+                {% if not artist.photo %}<i class="ti ti-user artist-placeholder"></i>{% endif %}
+                <span class="artist-name">{{ artist.name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </main>
 </body>
 </html>

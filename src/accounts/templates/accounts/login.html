@@ -25,27 +25,34 @@
         <div class="auth-card">
             <h2>Вход в аккаунт</h2>
             
-            {% if messages %}
-            <div class="auth-messages">
-                {% for message in messages %}
-                <p class="message {{ message.tags }}">{{ message }}</p>
-                {% endfor %}
-            </div>
+            {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="auth-messages">
+                    <p class="message {{ error_type  }}">{{ error }}</p>
+                </div>
+            {%endfor%}
             {% endif %}
             
-            <form method="post" action="{% url 'login' %}">
+            <form method="post" action="{% url 'login' %}" novalidate>
                 {% csrf_token %}
                 
                 <div class="form-group">
                     <label for="username">Имя пользователя или Email</label>
-                    <input type="text" id="username" name="username" required placeholder="Введите логин" autocomplete="username">
+                    <input value="{{form.username.value|default:'' }}" type="text" id="username" name="username" required placeholder="Введите логин" autocomplete="username">
                 </div>
-                
+                {%if form.username.errors%}
+                    <p class="username">{{ form.username.errors.0 }}</p>
+                {%endif%}
                 <div class="form-group">
                     <label for="password">Пароль</label>
                     <input type="password" id="password" name="password" required placeholder="Введите пароль" autocomplete="current-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                        <i class="ti ti-eye"></i>
+                    </button>
                 </div>
-                
+                {%if form.password1.errors%}
+                    <p class="password1">{{ form.password1.errors.0 }}</p>
+                {%endif%}
                 <div class="form-options">
                     <label class="checkbox">
                         <input type="checkbox" name="remember"> Запомнить меня
@@ -89,6 +96,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 300);
     }
+    function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+    
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('ti-eye');
+                icon.classList.add('ti-eye-off');
+        }   else {
+                input.type = 'password';
+                icon.classList.remove('ti-eye-off');
+                icon.classList.add('ti-eye');
+    }
+}
 });
 </script>
 </body>

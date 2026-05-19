@@ -124,7 +124,7 @@ body {
     margin: 0;
     background: rgba(220, 53, 69, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: #ffd8d8;
     max-width: 100%;
     word-wrap: break-word;
 }
@@ -404,5 +404,93 @@ nav a.active::after {
     .auth-messages {
         top: 70px;
         width: 95%;
+    }
+}
+
+.form-group + p {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin: 8px 0 18px 2px;
+    padding: 8px 14px;
+    background: rgba(220, 53, 69, 0.06);
+    border-left: 2px solid #dc3545;
+    border-radius: 0 8px 8px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    animation: errorSlide 0.25s var(--ease);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.form-group + p::before {
+    content: '•';
+    color: #dc3545;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.form-group + p:empty {
+    display: none;
+}
+
+@keyframes errorSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+input:invalid:not(:placeholder-shown) {
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    background: rgba(220, 53, 69, 0.04);
+    transition: border-color var(--duration) var(--ease),
+                background var(--duration) var(--ease),
+                box-shadow var(--duration) var(--ease);
+}
+
+input:invalid:not(:placeholder-shown):focus {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+    border-color: #ff6b7a !important;
+}
+
+input:invalid {
+    box-shadow: none !important;
+}
+
+.form-group {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 38px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--duration) var(--ease);
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: var(--accent-start);
+}
+
+.password-toggle i {
+    font-size: 18px;
+    pointer-events: none;
+}
+
+@media (max-width: 480px) {
+    .password-toggle {
+        top: 36px;
+        right: 10px;
     }
 }
