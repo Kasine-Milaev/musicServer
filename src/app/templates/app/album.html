@@ -15,9 +15,9 @@
             <div class="logo-icon"></div>
         </div>
         <nav>
-            <a href="/">Главная</a>
-            <a href="/artists/">Артисты</a>
-            <a href="/albums/">Альбомы</a>
+            <a href="{%url 'main'%}">Главная</a>
+            <a href="{%url 'artists'%}">Артисты</a>
+            <a href="{%url 'albums'%}">Альбомы</a>
             <a href="/favorites/">Избранное</a>
         </nav>
         <div class="search-bar">   
@@ -35,7 +35,7 @@
         <div class="album-meta">
             <h1>{{ album.name }}</h1>
             {%for albumAuthor in albumAuthors%}
-                <a href="/artists/{{ albumAuthor.slug }}/" class="album-artist">{{ albumAuthor.name }}</a>
+                <a href="/artists/{{ albumAuthor.slug }}" class="album-artist">{{ albumAuthor.name }}</a>
             {%endfor%}
             {% if album.year %}
             <span class="album-year">{{ album.year }}</span>

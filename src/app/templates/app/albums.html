@@ -14,9 +14,9 @@
             <div class="logo-icon"></div>
         </div>
         <nav>
-            <a href="/">Главная</a>
-            <a href="/artists/">Артисты</a>
-            <a href="/albums/" class="active">Альбомы</a>
+            <a href="{%url 'main'%}">Главная</a>
+            <a href="{%url 'artists'%}">Артисты</a>
+            <a href="{%url% 'albums'}" class="active">Альбомы</a>
             <a href="/favorites/">Избранное</a>
         </nav>
         <div class="search-bar">
@@ -52,7 +52,7 @@
         <h1>Альбомы</h1>
         <div class="albums-grid">
             {% for album in albums %}
-            <a href="/albums/{{ album.slug }}/" class="media-card" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
+            <a href="{%url 'albums'%}/{{ album.slug }}" class="media-card" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
                 {% if not album.cover %}<i class="ti ti-disc artist-placeholder"></i>{% endif %}
                 <span class="card-name">{{ album.name }}</span>
                 {% if album.year %}<span class="card-year">{{ album.year }}</span>{% endif %}

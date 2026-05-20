@@ -26,50 +26,59 @@
             <h2>Создать аккаунт</h2>
             
             {% if form.non_field_errors %}
-            {% for error in form.non_field_errors %}
-                <div class="auth-messages">
-                    <p class="message {{ error_type  }}">{{ error }}</p>
-                </div>
-            {%endfor%}
+            <div class="auth-messages">
+                {% for error in form.non_field_errors %}
+                    <p class="message error">{{ error }}</p>
+                {% endfor %}
+            </div>
             {% endif %}
             
-            <form method="post" action="{% url 'registration' %}" novalidate>
+            <form method="post" 
+                  action="{% url 'registration' %}" 
+                  novalidate
+                  id="registerForm"
+                  data-validate-url="{% url 'validate' %}"
+                  data-csrf="{{ csrf_token }}">
                 {% csrf_token %}
-                
+
                 <div class="form-group">
                     <label for="username">Имя пользователя</label>
                     <input value="{{form.username.value|default:'' }}" type="text" id="username" name="username" required placeholder="Придумайте логин" minlength="3" maxlength="150" autocomplete="username">
                 </div>
-                {%if form.username.errors%}
-                    <p class="">{{ form.username.errors.0 }}</p>
-                {%endif%}
+                {% if form.username.errors %}
+                    <p class="error-server">{{ form.username.errors.0 }}</p>
+                {% endif %}
+
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input value="{{form.email.value|default:'' }}" type="email" id="email" name="email" required placeholder="example@yang.com" autocomplete="email">
                 </div>
-                {%if form.email.errors%}
-                    <p class="">{{ form.email.errors.0 }}</p>
-                {%endif%}
+                {% if form.email.errors %}
+                    <p class="error-server">{{ form.email.errors.0 }}</p>
+                {% endif %}
+                
                 <div class="form-group">
                     <label for="password1">Пароль</label>
                     <input type="password" id="password1" name="password1" required placeholder="Минимум 8 символов" minlength="8" autocomplete="new-password">
-                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password1', this)">
                         <i class="ti ti-eye"></i>
                     </button>
                 </div>
-                {%if form.password1.errors%}
-                    <p class="password1">{{ form.password1.errors.0 }}</p>
-                {%endif%}
+                {% if form.password1.errors %}
+                    <p class="error-server">{{ form.password1.errors.0 }}</p>
+                {% endif %}
+                
                 <div class="form-group">
                     <label for="password2">Подтвердите пароль</label>
                     <input type="password" id="password2" name="password2" required placeholder="Повторите пароль" autocomplete="new-password">
-                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password2', this)">
                         <i class="ti ti-eye"></i>
                     </button>
                 </div>
-                {%if form.password2.errors%}
-                    <p class="password2">{{ form.password2.errors.0 }}</p>
-                {%endif%}
+                {% if form.password2.errors %}
+                    <p class="error-server">{{ form.password2.errors.0 }}</p>
+                {% endif %}
+                
                 <div class="form-options">
                     <label class="checkbox">
                         <input type="checkbox" name="agree" required> Я согласен с <a href="#">условиями использования</a>
@@ -84,52 +93,117 @@
             </p>
         </div>
     </main>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const messages = document.querySelectorAll('.message');
 
-            messages.forEach(function(message) {
-                let autoClose = setTimeout(function() {
-                closeMessage(message);
-            }, 5000);
+<script src="{% static 'accounts/js/api_validate.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    if (!form) return;
+    
+    let msgBox = document.querySelector('.auth-messages');
+    if (!msgBox) {
+        msgBox = document.createElement('div');
+        msgBox.className = 'auth-messages';
+        form.parentNode.insertBefore(msgBox, form);
+    }
 
-            message.addEventListener('click', function(e) {
-            if (e.target.closest('.message::after') || e.target === this) {
-                clearTimeout(autoClose);
-                closeMessage(message);
+    if (typeof window.initRealtimeValidation === 'function') {
+        window.initRealtimeValidation();
+    }
+
+    const pass1 = document.getElementById('password1');
+    const pass2 = document.getElementById('password2');
+    
+    if (pass1 && pass2) {
+        function checkMatch() {
+            const group = pass2.closest('.form-group');
+            let err = group?.parentElement?.querySelector('.error-inline');
+            if (!err) {
+                err = group?.parentElement?.querySelector('.error-server');
             }
-        });
+            
+            if (pass2.value && pass1.value !== pass2.value) {
+                if (!err) { 
+                    err = document.createElement('p'); 
+                    err.className = 'error-inline'; 
+                    group.parentElement.appendChild(err); 
+                }
+                err.textContent = 'Пароли не совпадают';
+                group.classList.add('has-error');
+            } else {
+                if (err && err.classList.contains('error-inline')) err.remove();
+                group.classList.remove('has-error');
+            }
+        }
+        pass1.addEventListener('input', checkMatch);
+        pass2.addEventListener('input', checkMatch);
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.dataset.original = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="ti ti-loader"></i> Обработка...';
+        }
+        if (msgBox) msgBox.innerHTML = '';
+        document.querySelectorAll('.error-inline').forEach(el => el.remove());
+
+        const formData = new FormData(this);
+        const csrfToken = form.dataset.csrf;
+        
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken || '' },
+                body: formData
+            });
+            const data = await res.json();
+
+            if (res.ok && data.redirect) {
+                if (msgBox) {
+                    msgBox.innerHTML = '<p class="message success">✓ Регистрация успешна!</p>';
+                    setTimeout(() => window.location.href = data.redirect, 1200);
+                } else {
+                    window.location.href = data.redirect;
+                }
+            } else {
+                const errors = data.errors || {};
+                const errList = [];
+                if (errors.__all__) errList.push(...errors.__all__);
+                for (const k in errors) if (k !== '__all__') errList.push(...errors[k]);
+                
+                errList.forEach(msg => {
+                    const p = document.createElement('p');
+                    p.className = 'error-server';
+                    p.textContent = msg;
+                    form.parentNode.insertBefore(p, form);
+                });
+            }
+        } catch (err) {
+            console.error('[submit] error:', err);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = submitBtn.dataset.original;
+            }
+        }
     });
 
-    function togglePassword(inputId, btn) {
-            const input = document.getElementById(inputId);
-            const icon = btn.querySelector('i');
-    
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('ti-eye');
-                icon.classList.add('ti-eye-off');
-        }   else {
-                input.type = 'password';
-                icon.classList.remove('ti-eye-off');
-                icon.classList.add('ti-eye');
-    }
-}
-
-    function closeMessage(element) {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(-20px)';
-        element.style.transition = 'opacity 0.3s, transform 0.3s';
-        
-        setTimeout(function() {
-            element.remove();
-            const container = document.querySelector('.auth-messages');
-            if (container && container.children.length === 0) {
-                container.style.display = 'none';
-            }
-        }, 300);
-    }
-    
+    window.togglePassword = function(id, btn) {
+        const inp = document.getElementById(id);
+        const ico = btn?.querySelector('i');
+        if (!inp || !ico) return;
+        if (inp.type === 'password') {
+            inp.type = 'text'; 
+            ico.classList.replace('ti-eye', 'ti-eye-off');
+        } else {
+            inp.type = 'password'; 
+            ico.classList.replace('ti-eye-off', 'ti-eye');
+        }
+    };
 });
 </script>
 </body>

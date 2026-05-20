@@ -15,15 +15,15 @@
         </div>
         <nav>
             <a href="/" class="active">Главная</a>
-            <a href="/artists/">Артисты</a>
-            <a href="/albums/">Альбомы</a>
+            <a href="{%url 'artists'%}">Артисты</a>
+            <a href="{%url 'albums'%}">Альбомы</a>
             <a href="/favorites/">Избранное</a>
         </nav>
         <div class="search-bar">
             <span></span>
             <input type="text" placeholder="Поиск треков, артистов.." id="serchInput">
         </div>
-
+        
         {% if not user.is_authenticated %}
         <div class="auth-buttons">
             <a href="{% url 'login' %}" class="btn-login">Войти</a>

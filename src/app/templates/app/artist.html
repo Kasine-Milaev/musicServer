@@ -14,9 +14,9 @@
             <div class="logo-icon"></div>
         </div>
         <nav>
-            <a href="/">Главная</a>
-            <a href="/artists/">Артисты</a>
-            <a href="/albums/">Альбомы</a>
+            <a href="{%url 'main'%}">Главная</a>
+            <a href="{%url 'artists'%}">Артисты</a>
+            <a href="{%url 'albums'%}">Альбомы</a>
             <a href="/favorites/">Избранное</a>
         </nav>
         <div class="search-bar">
@@ -33,7 +33,7 @@
             <button class="scroll-btn prev-btn" aria-label="Назад"><i class="ti ti-chevron-left"></i></button>
             <ul class="scroll-list">
                 {% for album in albums %}
-                <a href="/albums/{{ album.slug }}/" class="media-card" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
+                <a href="{%url 'albums'%}/{{ album.slug }}" class="media-card" {% if album.cover %}style="--cover: url('{{ album.cover.url }}')"{% endif %}>
                 {% if not album.cover %}
                 <i class="ti ti-disc artist-placeholder"></i>
                 {% endif %}

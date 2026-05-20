@@ -14,9 +14,9 @@
             <div class="logo-icon"></div>
         </div>
         <nav>
-            <a href="/">Главная</a>
-            <a href="/artists/">Артисты</a>
-            <a href="/albums/">Альбомы</a>
+            <a href="{%url 'main'%}">Главная</a>
+            <a href="{%url 'artists'%}">Артисты</a>
+            <a href="{%url 'albums'%}">Альбомы</a>
             <a href="/favorites/">Избранное</a>
         </nav>
         <div class="search-bar">   
@@ -61,9 +61,9 @@
             </div>
             
             <div class="profile-actions">
-                {% comment %} <a href="{% url 'edit_profile' %}" class="btn-outline"> {% endcomment %}
+                <a href="{% url 'edit_profile' %}" class="btn-outline">
                     <i class="ti ti-edit"></i> Редактировать
-                {% comment %} </a> {% endcomment %}
+                </a>
                 <form method="post" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn-danger">
@@ -126,7 +126,7 @@
                     <div class="empty-state">
                         <i class="ti ti-heart-broken"></i>
                         <p>Пока нет избранных треков</p>
-                        <a href="/albums/" class="btn-outline">Найти музыку</a>
+                        <a href="{%url 'albums'%}" class="btn-outline">Найти музыку</a>
                     </div>
                     {% endif %}
                 </div>

@@ -1,0 +1,100 @@
+    {% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать профиль | Yang</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css'%}">
+</head>
+<body class="auth-page">
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+        </div>
+        <nav>
+            <a href="/">Главная</a>
+            <a href="/artists/">Артисты</a>
+            <a href="/albums/">Альбомы</a>
+            <a href="/favorites/">Избранное</a>
+        </nav>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Редактировать профиль</h2>
+            
+            <div class="auth-messages"></div>
+            
+            <form method="post" action="{% url 'edit_profile' %}" novalidate enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+    <label>Аватар</label>
+    <div class="avatar-preview" style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+        <div class="profile-avatar">
+            {% if user.cover %}
+                <img src="{{ user.cover.url }}" alt="{{ user.username }}" id="avatarPreview">
+            {% elif user.email %}
+                <img src="https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=e94560&color=fff" alt="{{ user.username }}" id="avatarPreview">
+            {% else %}
+                <i class="ti ti-user"></i>
+            {% endif %}
+        </div>
+        <input type="file" id="avatarInput" name="cover" accept="image/*" style="display:none;">
+        <button type="button" class="btn-outline" onclick="document.getElementById('avatarInput').click()" style="padding:8px 16px;font-size:13px;">
+            {% if user.cover %}Сменить{% else %}Загрузить{% endif %}
+        </button>
+    </div>
+    {% if form.cover.errors %}
+        <p class="error-inline">{{ form.cover.errors.0 }}</p>
+    {% endif %}
+</div>
+
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input value="{{ user.username }}" type="text" id="username" name="username" required placeholder="Придумайте логин" minlength="3" maxlength="150" autocomplete="username">
+                </div>
+                {% if form.username.errors %}
+                    <p class="error-inline username">{{ form.username.errors.0 }}</p>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input value="{{ user.email }}" type="email" id="email" name="email" required placeholder="example@yang.com" autocomplete="email">
+                </div>
+                {% if form.email.errors %}
+                    <p class="error-inline email">{{ form.email.errors.0 }}</p>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="first_name">Имя</label>
+                    <input value="{{ user.first_name|default:'' }}" type="text" id="first_name" name="first_name" placeholder="Ваше имя" maxlength="150">
+                </div>
+                {% if form.first_name.errors %}
+                    <p class="error-inline first_name">{{ form.first_name.errors.0 }}</p>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="last_name">Фамилия</label>
+                    <input value="{{ user.last_name|default:'' }}" type="text" id="last_name" name="last_name" placeholder="Ваша фамилия" maxlength="150">
+                </div>
+                {% if form.last_name.errors %}
+                    <p class="error-inline last_name">{{ form.last_name.errors.0 }}</p>
+                {% endif %}
+                
+                <div class="form-options" style="margin-top:24px;">
+                    <a href="{% url 'profile' %}" class="btn-outline" style="padding:12px 20px;">
+                        <i class="ti ti-arrow-left"></i> Отмена
+                    </a>
+                    <button type="submit" class="btn-primary" style="padding:12px 32px;">
+                        <i class="ti ti-device-floppy"></i> Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <script src="{% static 'accounts/js/script_profile.js' %}"></script>
+</body>
+</html>
