@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Album, Artist, Track, TrackAuthor, AlbumAuthor
+from .models import *
 # Register your models here.
 
 class TrackAuthorInline(admin.TabularInline):
@@ -15,12 +15,35 @@ class AlbumTracks(admin.TabularInline):
     extra = 0 
     ordering = ['order']
 
-class TrackAdmin(admin.ModelAdmin):
-    inlines = [TrackAuthorInline]
+class FavoritesTrackInline(admin.TabularInline):
+    model = FavoriteTrack
+    extra = 0
 
+@admin.register(Track)
+class TrackAdmin(admin.ModelAdmin):
+    search_fields = ['name','slug']
+    list_display = ['name','album']
+
+    inlines = [TrackAuthorInline,FavoritesTrackInline]
+
+@admin.register(Album)
 class AlbumAdmin(admin.ModelAdmin):
+    search_fields = ['name','slug']
+    list_display = ['name','get_artist_name']
     inlines = [AlbumAuthorInline,AlbumTracks]
 
-admin.site.register(Album,AlbumAdmin)
-admin.site.register(Artist)
-admin.site.register(Track,TrackAdmin)
+    @admin.display(description="Артист")
+    def get_artist_name(self,obj):
+        authors = obj.artists.all()
+        artist_names = []
+        for author in authors:
+            if author.name:
+                artist_names.append(author.name)
+        return ", ".join(artist_names)
+
+@admin.register(Artist)
+class ArtistAdmin(admin.ModelAdmin):
+    search_fields = ['name','slug']
+    inlines = [AlbumAuthorInline]
+
+    

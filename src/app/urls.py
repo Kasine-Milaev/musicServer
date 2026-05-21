@@ -14,5 +14,7 @@ urlpatterns = [
 
     path('profile',views.profile, name="profile"),
 
-    path('profile/edit',accounts_views.edit_profile, name = "edit_profile")
+    path('profile/edit',accounts_views.edit_profile, name = "edit_profile"),
+
+    path('like-track', views.like_track, name="like_track")
 ]

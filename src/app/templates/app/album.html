@@ -53,14 +53,15 @@
     <div class="track-item" 
         data-track-id="{{ track.id }}"
         data-track-url="{{ track.path.url }}"
+        data-track-slug="{{track.slug}}"
         data-track-cover="{% if album.cover %}{{ album.cover.url }}{% endif %}">
         
         <div class="track-number">{{ forloop.counter }}</div>
         
         <div class="track-info">
             <div class="track-title">{{ track.name }}</div>
-            {%for artist in track.trackauthor_set.all%}
-            <div class="track-artist">ft. {{ artist.artist.name }}</div>
+            {%for artist in track.artists.all%}
+            <div class="track-artist">ft. {{ artist.name }}</div>
             {%endfor%}
         </div>
         
@@ -68,6 +69,9 @@
         
         <button class="track-play-btn" aria-label="Воспроизвести">
             <i class="ti ti-player-play"></i>
+        </button>
+        <button class="track-fav-btn" aria-label="Добавить в избранное" data-track-id="{{ track.id }}" data-track-slug="{{ track.slug }}">
+            <i class="{%if track.is_favorite%}ti ti-check{%else%}ti ti-plus{%endif%}"></i>
         </button>
     </div>
     {%else%}
@@ -131,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.getElementById('playerClose');
     const volumeEl = document.getElementById('volume');
     const albumAuthors = document.getElementsByClassName('album-artist');
+    
     if (!audio) return;
 
     function formatTime(sec) {
@@ -158,11 +163,11 @@ document.addEventListener('DOMContentLoaded', function() {
             audio.src = url;
             audio.currentTime = 0;
             if (playerTitle) playerTitle.textContent = title || 'Без названия';
-                if (albumAuthors){
-                    playerArtist.textContent = ''
-                    const authorsText = Array.from(albumAuthors).map(el => el.textContent).join(', ');
-                    playerArtist.textContent +=authorsText;
-                }
+            if (albumAuthors){
+                playerArtist.textContent = '';
+                const authorsText = Array.from(albumAuthors).map(el => el.textContent).join(', ');
+                playerArtist.textContent += authorsText;
+            }
             if (artist) playerArtist.textContent += ' ' + artist || '';
             if (cover && playerCover) playerCover.innerHTML = `<img src="${cover}" style="width:100%;height:100%;object-fit:cover; border-radius: 8px;">`;
         }
@@ -208,6 +213,66 @@ document.addEventListener('DOMContentLoaded', function() {
         audio.volume = volumeEl.value / 100;
         volumeEl.addEventListener('input', (e) => audio.volume = e.target.value / 100);
     }
+    
+    document.querySelectorAll('.track-fav-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const trackId = btn.dataset.trackId;
+            const slug = btn.dataset.trackSlug;
+            const icon = btn.querySelector('i');
+            console.log(slug)
+            
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Проверяем, начинается ли кука с нужного нам имени
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            if (trackId) {
+                try {
+                    const response = await fetch('/like-track', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ slug: slug })
+                    });
+                    const data = await response.json(); 
+                    if(data.is_favorite){
+                        btn.classList.add('added');
+                        icon.className = 'ti ti-check';
+                                        
+                        setTimeout(() => {
+                            btn.classList.remove('added');
+                        }, 1000);
+                    }
+                    else{
+                        btn.classList.add('removed');
+                        icon.className = 'ti ti-x'
+                        setTimeout(() => {
+                            btn.classList.remove('removed');
+                            icon.className = 'ti ti-plus';
+                        }, 1000);
+                    }
+                } catch (err) {
+                    console.error('Error adding to favorites:', err);
+                }
+            }
+        });
+    });
 });
 </script>
 </body>
